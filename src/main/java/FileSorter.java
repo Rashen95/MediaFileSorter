@@ -42,7 +42,7 @@ public class FileSorter {
             }
         }
 
-        String folderPathForPaste = "src/main/resources/Мои отсортированные файлы/";
+        String folderPathForPaste = "Мои отсортированные файлы/";
         File folderForPaste = new File(folderPathForPaste);
         if (folderForPaste.exists()) {
             deleteDir(folderForPaste);
@@ -52,6 +52,7 @@ public class FileSorter {
         }
 
         sortAndCopyFiles(folderForCopy, folderForPaste);
+        executor.shutdown();
     }
 
     private static void sortAndCopyFiles(File folderForCopy, File folderForPaste) {
