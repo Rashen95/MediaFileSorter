@@ -1,6 +1,7 @@
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -77,10 +78,10 @@ public class FileSorter {
                 try {
                     myFiles.add(new MyFile(
                                     fileForCopy.getName(),
-                                    Files.readAttributes(fileForCopy.toPath(), BasicFileAttributes.class)
-                                            .lastModifiedTime()
+                                    Files.getLastModifiedTime(fileForCopy.toPath())
                                             .toInstant()
-                                            .atZone(ZoneId.systemDefault()).toLocalDateTime()
+                                            .atZone(ZoneId.systemDefault())
+                                            .toLocalDateTime()
                             )
                     );
                 } catch (IOException e) {
@@ -124,11 +125,10 @@ public class FileSorter {
             File fileForCopy = new File(folderForCopy + "/" + myFile.name());
             File fileForPaste = new File(folderForPaste + "/" + newFileNameForPaste);
             i++;
-            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(fileForCopy));
-                 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(fileForPaste))) {
-                while (bufferedInputStream.available() > 0) {
-                    bufferedOutputStream.write(bufferedInputStream.read());
-                }
+            try {
+                Files.copy(fileForCopy.toPath(), fileForPaste.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                FileTime lastModifiedTime = Files.getLastModifiedTime(fileForCopy.toPath());
+                Files.setLastModifiedTime(fileForPaste.toPath(), lastModifiedTime);
                 System.out.println(counter.addAndGet(1) + " файлов скопировано");
             } catch (IOException e) {
                 throw new RuntimeException(e);
