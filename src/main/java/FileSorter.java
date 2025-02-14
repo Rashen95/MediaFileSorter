@@ -4,9 +4,11 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class FileSorter {
@@ -36,8 +38,19 @@ public class FileSorter {
         }
         folderForPaste.mkdirs();
 
+        long startTime = System.currentTimeMillis();
+
         sortAndCopyFiles(folderForCopy, folderForPaste);
         executor.shutdown();
+
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.printf("Выполнение программы заняло %s секунд\n", (endTime - startTime) / 1000);
     }
 
     private static void sortAndCopyFiles(File folderForCopy, File folderForPaste) {
@@ -111,7 +124,9 @@ public class FileSorter {
                 Files.copy(fileForCopy.toPath(), fileForPaste.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 FileTime lastModifiedTime = Files.getLastModifiedTime(fileForCopy.toPath());
                 Files.setLastModifiedTime(fileForPaste.toPath(), lastModifiedTime);
-                System.out.println(counter.addAndGet(1) + " файлов скопировано");
+                System.out.printf("[%s] %s файлов скопировано\n",
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                        counter.addAndGet(1));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
