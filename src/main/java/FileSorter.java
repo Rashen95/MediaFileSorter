@@ -17,18 +17,24 @@ public class FileSorter {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Введите путь к папке, которую хотите копировать и отсортировать файлы по дате: ");
+        System.out.print("Введите путь к папке, которую хотите копировать и отсортировать " +
+                "файлы по дате (путь должен содержать только английские символы или цифры: ");
         String folderPathForCopy = scanner.nextLine();
+        folderPathForCopy = folderPathForCopy.replace("\\", File.separator);
         File folderForCopy = new File(folderPathForCopy);
 
-        String folderPathForPaste = "Мои отсортированные файлы/";
+        System.out.print("Введите путь к папке, в которую хотите копировать и отсортировать " +
+                "файлы по дате (путь должен содержать только английские символы или цифры: ");
+        String folderPathForPaste = scanner.nextLine();
+        folderPathForPaste = folderPathForPaste.replace("\\", File.separator)
+                .concat(File.separator)
+                .concat("Мои отсортированные файлы");
         File folderForPaste = new File(folderPathForPaste);
+
         if (folderForPaste.exists()) {
             deleteDir(folderForPaste);
         }
-        if (folderForPaste.mkdirs()) {
-            System.out.println("Директория: \"" + folderForPaste.getAbsolutePath() + "\" создана");
-        }
+        folderForPaste.mkdirs();
 
         sortAndCopyFiles(folderForCopy, folderForPaste);
         executor.shutdown();
@@ -39,18 +45,16 @@ public class FileSorter {
 
         if (folderForCopy.listFiles() == null) {
             System.out.println("""
-                    ----------------------------------
-                    Введенной директории не существует
-                    ----------------------------------""");
+                    ----------------------------------------------------------
+                    Введенной директории (источника копирования) не существует
+                    ----------------------------------------------------------""");
             return;
         }
 
         for (File fileForCopy : Objects.requireNonNull(folderForCopy.listFiles())) {
             if (fileForCopy.isDirectory()) {
-                File newFolderForPaste = new File(folderForPaste + "/" + fileForCopy.getName());
-                if (newFolderForPaste.mkdirs()) {
-                    System.out.println("Директория: \"" + newFolderForPaste.getAbsolutePath() + "\" создана");
-                }
+                File newFolderForPaste = new File(folderForPaste + File.separator + fileForCopy.getName());
+                newFolderForPaste.mkdirs();
                 sortAndCopyFiles(fileForCopy, newFolderForPaste);
             } else {
                 try {
@@ -82,13 +86,10 @@ public class FileSorter {
             if (file.isDirectory()) {
                 deleteDir(file);
             }
-            if (file.delete()) {
-                System.out.println("Файл: \"" + file.getAbsolutePath() + "\" удален");
-            }
+            file.delete();
         }
-        if (dir.delete()) {
-            System.out.println("Директория: \"" + dir.getAbsolutePath() + "\" удалена");
-        }
+
+        dir.delete();
     }
 
     private static void createFilesFromSortedList(List<MyFile> myFiles, File folderForCopy, File folderForPaste) {
@@ -103,8 +104,8 @@ public class FileSorter {
                 newFileNameForPaste = String.valueOf(i);
             }
 
-            File fileForCopy = new File(folderForCopy + "/" + myFile.name());
-            File fileForPaste = new File(folderForPaste + "/" + newFileNameForPaste);
+            File fileForCopy = new File(folderForCopy + File.separator + myFile.name());
+            File fileForPaste = new File(folderForPaste + File.separator + newFileNameForPaste);
             i++;
             try {
                 Files.copy(fileForCopy.toPath(), fileForPaste.toPath(), StandardCopyOption.REPLACE_EXISTING);
