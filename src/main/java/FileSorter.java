@@ -13,7 +13,6 @@ public class FileSorter {
     private final static AtomicLong counter = new AtomicLong(0);
     private final static ExecutorService executor =
             Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    private static boolean usedAllThreads;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -21,27 +20,6 @@ public class FileSorter {
         System.out.print("Введите путь к папке, которую хотите копировать и отсортировать файлы по дате: ");
         String folderPathForCopy = scanner.nextLine();
         File folderForCopy = new File(folderPathForCopy);
-
-        while (true) {
-            System.out.println("""
-                    Использовать все потоки процессора?
-                    1. Да
-                    2. Нет
-                    Введите цифру соответствующую предпочтительного для Вас пункта меню:""");
-            String userChange = scanner.nextLine().strip();
-            if (userChange.equals("1")) {
-                usedAllThreads = true;
-                break;
-            } else if (userChange.equals("2")) {
-                usedAllThreads = false;
-                break;
-            } else {
-                System.out.println("""
-                        ------------------------------
-                        Вы ввели недопустимое значение
-                        ------------------------------""");
-            }
-        }
 
         String folderPathForPaste = "Мои отсортированные файлы/";
         File folderForPaste = new File(folderPathForPaste);
@@ -92,11 +70,7 @@ public class FileSorter {
 
         myFiles.sort(Comparator.comparing(MyFile::creationTime));
 
-        if (usedAllThreads) {
-            executor.execute(() -> createFilesFromSortedList(myFiles, folderForCopy, folderForPaste));
-        } else {
-            createFilesFromSortedList(myFiles, folderForCopy, folderForPaste);
-        }
+        executor.execute(() -> createFilesFromSortedList(myFiles, folderForCopy, folderForPaste));
     }
 
     private static void deleteDir(File dir) {
@@ -120,8 +94,15 @@ public class FileSorter {
     private static void createFilesFromSortedList(List<MyFile> myFiles, File folderForCopy, File folderForPaste) {
         int i = 1;
         for (MyFile myFile : myFiles) {
-            String fileForCopyNameWithoutType = myFile.name().substring(0, myFile.name().lastIndexOf("."));
-            String newFileNameForPaste = String.valueOf(i).concat(myFile.name().replace(fileForCopyNameWithoutType, ""));
+            String newFileNameForPaste;
+
+            if (myFile.name().contains(".")) {
+                String fileForCopyNameWithoutType = myFile.name().substring(0, myFile.name().lastIndexOf("."));
+                newFileNameForPaste = String.valueOf(i).concat(myFile.name().replace(fileForCopyNameWithoutType, ""));
+            } else {
+                newFileNameForPaste = String.valueOf(i);
+            }
+
             File fileForCopy = new File(folderForCopy + "/" + myFile.name());
             File fileForPaste = new File(folderForPaste + "/" + newFileNameForPaste);
             i++;
