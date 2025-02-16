@@ -73,6 +73,9 @@ public class PhotoSorter {
                         !photoForCopy.getName().toLowerCase().endsWith(".heif") &&
                         !photoForCopy.getName().toLowerCase().endsWith(".heic")) {
                     unsortedFiles.add(photoForCopy);
+                    System.out.printf("Файл %s не соответствует формату. " +
+                                    "Будет перемещен в дирректорию unsortedFiles\n",
+                            photoForCopy.getAbsolutePath());
                     continue;
                 }
 
@@ -92,6 +95,9 @@ public class PhotoSorter {
 
                 if (creationDateOfPhoto == null) {
                     unsortedFiles.add(photoForCopy);
+                    System.out.printf("У файла %s отсутствует дата создания. " +
+                                    "Будет перемещен в дирректорию unsortedFiles\n",
+                            photoForCopy.getAbsolutePath());
                     continue;
                 }
 
@@ -100,7 +106,9 @@ public class PhotoSorter {
                             Collections.synchronizedList(new ArrayList<>()));
                 }
 
-                photosByYear.get(String.valueOf(creationDateOfPhoto.getYear())).add(new Photo(photoForCopy, creationDateOfPhoto));
+                photosByYear.get(String.valueOf(creationDateOfPhoto.getYear()))
+                        .add(new Photo(photoForCopy, creationDateOfPhoto));
+                System.out.printf("Фото %s добавлено в перечень для сортировки\n", photoForCopy.getAbsolutePath());
             }
         }
     }
@@ -125,7 +133,8 @@ public class PhotoSorter {
             new Thread(() -> {
                 int i = 1;
 
-                File folderForPasteByYear = new File(folderForPaste.getAbsolutePath().concat(File.separator).concat(entry.getKey()));
+                File folderForPasteByYear = new File(
+                        folderForPaste.getAbsolutePath().concat(File.separator).concat(entry.getKey()));
 
                 if (!folderForPasteByYear.exists()) {
                     folderForPasteByYear.mkdirs();
