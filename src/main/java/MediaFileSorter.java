@@ -43,8 +43,8 @@ public class MediaFileSorter {
         createDirectoryForSortMedia();
 
         // Сортировка
-        for (List<MyFile> photos : fileRepository.getFilesByYear().values()) {
-            photos.sort(Comparator.comparing(MyFile::creationDateTime));
+        for (List<MyFile> files : fileRepository.getFilesByYear().values()) {
+            files.sort(Comparator.comparing(MyFile::creationDateTime));
         }
 
         // Создание файлов
