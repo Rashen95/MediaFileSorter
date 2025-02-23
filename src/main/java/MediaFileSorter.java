@@ -64,7 +64,7 @@ public class MediaFileSorter {
         folderPathForCopy = folderPathForCopy.replace("\\", File.separator);
         sourceFolder = new File(folderPathForCopy);
 
-        folderForSortMedia = new File(sourceFolder.getAbsolutePath().concat(File.separator).concat("Мои отсортированные фото"));
+        folderForSortMedia = new File(sourceFolder.getAbsolutePath().concat(File.separator).concat("Мои отсортированные файлы"));
     }
 
     private void userSelectionTypeFilesForSorted() {
