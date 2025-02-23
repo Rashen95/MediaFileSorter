@@ -46,11 +46,13 @@ public abstract class RepositoryFiller {
             return;
         }
 
-        LocalDateTime creationDateTime;
+        LocalDateTime creationDateTime = getCreationDateTimeFromMetadata(file);
 
-        if ((creationDateTime = getLastModified(file)) == null
-                && (creationDateTime = getCreationDateTimeFromMetadata(file)) == null) {
-            fileRepository.getUnsortedFiles().add(file);
+        if (creationDateTime == null) {
+            creationDateTime = getLastModified(file);
+        }
+
+        if (creationDateTime == null) {
             System.out.printf("У файла %s отсутствует дата создания. " +
                             "Будет перемещен в дирректорию unsortedFiles\n",
                     file.getAbsolutePath());
@@ -66,7 +68,6 @@ public abstract class RepositoryFiller {
                 .add(new MyFile(file, creationDateTime));
         System.out.printf("Файл %s добавлен в перечень для сортировки\n", file.getAbsolutePath());
     }
-
 
     private LocalDateTime getLastModified(File file) {
         try {
