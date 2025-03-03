@@ -53,6 +53,7 @@ public abstract class RepositoryFiller {
         }
 
         if (creationDateTime == null) {
+            fileRepository.getUnsortedFiles().add(file);
             System.out.printf("У файла %s отсутствует дата создания. " +
                             "Будет перемещен в дирректорию unsortedFiles\n",
                     file.getAbsolutePath());

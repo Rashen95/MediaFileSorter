@@ -30,7 +30,7 @@ public final class PhotoRepositoryFiller extends RepositoryFiller {
             if (exifDirectory != null) {
                 Date date = exifDirectory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
                 if (date != null) {
-                    return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+                    return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("+00:00"));
                 } else {
                     return null;
                 }
