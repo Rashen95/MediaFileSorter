@@ -29,6 +29,7 @@ public class FileCreator {
         for (Map.Entry<String, Set<MyFile>> entry : fileRepository.getFilesByYear().entrySet()) {
             executorService.submit(() -> createFilesByMapEntry(entry, folderForSortMedia));
         }
+        executorService.shutdown();
     }
 
     private void createFilesByMapEntry(Map.Entry<String, Set<MyFile>> entry, File folderForSortMedia) {
