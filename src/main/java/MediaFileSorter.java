@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MediaFileSorter {
+    private final Scanner scanner = new Scanner(System.in);
     private final AtomicLong fileCounter = new AtomicLong();
     private FileType typeFilesForSorted;
     private File sourceFolder;
@@ -55,8 +56,6 @@ public class MediaFileSorter {
     }
 
     private void changeDirectoryForSort() {
-        Scanner scanner = new Scanner(System.in);
-
         System.out.print("Введите путь к папке, в которой хотите отсортировать "
                 + typeFilesForSorted.name()
                 + " по дате (путь должен содержать только английские символы или цифры: ");
@@ -77,7 +76,7 @@ public class MediaFileSorter {
                     3. Завершить работу программы
                     """);
             System.out.print("Введите соответствующую цифру: ");
-            String change = new Scanner(System.in).nextLine().strip();
+            String change = scanner.nextLine().strip();
             switch (change) {
                 case "1":
                     typeFilesForSorted = FileType.Photo;

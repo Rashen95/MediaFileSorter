@@ -39,10 +39,6 @@ public abstract class RepositoryFiller {
 
     private void addFileToRepository(File file) {
         if (!formatIsCorrect(file)) {
-            fileRepository.getUnsortedFiles().add(file);
-            System.out.printf("Файл %s не соответствует формату. " +
-                            "Будет перемещен в дирректорию unsortedFiles\n",
-                    file.getAbsolutePath());
             return;
         }
 
