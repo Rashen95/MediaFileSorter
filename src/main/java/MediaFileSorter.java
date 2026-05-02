@@ -1,26 +1,23 @@
-import Entity.FileType;
-import Entity.MyFile;
-import Repository.FileRepository;
-import RepositoryFiller.PhotoRepositoryFiller;
-import RepositoryFiller.VideoRepositoryFiller;
+import entity.FileType;
+import repository.FileRepository;
+import service.creator.FileCreator;
+import service.repositoryFiller.PhotoRepositoryFiller;
+import service.repositoryFiller.VideoRepositoryFiller;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileTime;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Objects;
+import java.util.Scanner;
 
 public class MediaFileSorter {
-    private final Scanner scanner = new Scanner(System.in);
-    private final AtomicLong fileCounter = new AtomicLong();
     private FileType typeFilesForSorted;
     private File sourceFolder;
     private File folderForSortMedia;
+
+    private final Scanner scanner = new Scanner(System.in);
+    private final FileCreator fileCreator = FileCreator.getInstance();
     private final FileRepository fileRepository = FileRepository.getInstance();
 
-    public void sort() {
+    public void start() {
         // Что сортируем?
         userSelectionTypeFilesForSorted();
 
@@ -43,16 +40,11 @@ public class MediaFileSorter {
         // Создание директории для отсортированных файлов
         createDirectoryForSortMedia();
 
-        // Сортировка
-        for (List<MyFile> files : fileRepository.getFilesByYear().values()) {
-            files.sort(Comparator.comparing(MyFile::creationDateTime));
-        }
-
         // Создание файлов
-        createFilesFromRepositoryInFolderForSortMedia();
+        fileCreator.createFilesFromRepositoryInFolderForSortMedia(fileRepository, folderForSortMedia);
 
-        // Копирование неотсортированных файлов (без даты или несоответствующего формата)
-        copyUnsortedFiles();
+        // Копирование неотсортированных файлов (без даты)
+        fileCreator.copyUnsortedFiles(fileRepository, folderForSortMedia);
     }
 
     private void changeDirectoryForSort() {
@@ -116,82 +108,5 @@ public class MediaFileSorter {
         }
 
         dir.delete();
-    }
-
-    private void createFilesFromRepositoryInFolderForSortMedia() {
-        for (Map.Entry<String, List<MyFile>> entry : fileRepository.getFilesByYear().entrySet()) {
-            new Thread(() -> {
-                int i = 1;
-
-                File folderForPasteByYear = new File(
-                        folderForSortMedia.getAbsolutePath().concat(File.separator).concat(entry.getKey()));
-
-                if (!folderForPasteByYear.exists()) {
-                    folderForPasteByYear.mkdirs();
-                }
-
-                for (MyFile file : entry.getValue()) {
-                    File fileForPaste = getFileForPaste(file, i, folderForPasteByYear);
-                    try {
-                        Files.copy(file.path().toPath(), fileForPaste.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        FileTime lastModifiedTime = Files.getLastModifiedTime(file.path().toPath());
-                        Files.setLastModifiedTime(fileForPaste.toPath(), lastModifiedTime);
-                        System.out.printf("%s файлов скопировано\n",
-                                fileCounter.addAndGet(1));
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                    }
-                    i++;
-                }
-            }).start();
-        }
-    }
-
-    private static File getFileForPaste(MyFile file, int i, File folderForPasteByYear) {
-        String newFileNameForPaste;
-
-        if (file.path().getName().contains(".")) {
-            String fileType = file.path().getName().substring(file.path().getName().lastIndexOf("."));
-            newFileNameForPaste = String.valueOf(i).concat(fileType);
-        } else {
-            newFileNameForPaste = String.valueOf(i);
-        }
-
-        return new File(folderForPasteByYear + File.separator + newFileNameForPaste);
-    }
-
-    private void copyUnsortedFiles() {
-        if (fileRepository.getUnsortedFiles().isEmpty()) {
-            return;
-        }
-
-        new Thread(() -> {
-            File folderForPasteUnsortedFiles =
-                    new File(folderForSortMedia.getAbsolutePath().concat(File.separator).concat("unsortedFiles"));
-
-            if (!folderForPasteUnsortedFiles.exists()) {
-                folderForPasteUnsortedFiles.mkdirs();
-            }
-
-            for (File file : Objects.requireNonNull(fileRepository.getUnsortedFiles())) {
-                File newFile = new File(
-                        folderForPasteUnsortedFiles.getAbsolutePath()
-                                .concat(File.separator)
-                                .concat(file.getName()));
-
-                while (newFile.exists()) {
-                    newFile = new File(newFile.getAbsolutePath().concat("(1)"));
-                }
-
-                try {
-                    Files.copy(
-                            file.toPath(),
-                            newFile.toPath(),
-                            StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
-        }).start();
     }
 }

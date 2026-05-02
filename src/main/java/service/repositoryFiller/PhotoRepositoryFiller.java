@@ -1,4 +1,4 @@
-package RepositoryFiller;
+package service.repositoryFiller;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;

@@ -1,16 +1,15 @@
-package RepositoryFiller;
+package service.repositoryFiller;
 
-import Entity.MyFile;
-import Repository.FileRepository;
+import entity.MyFile;
+import repository.FileRepository;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class RepositoryFiller {
     private final FileRepository fileRepository = FileRepository.getInstance();
@@ -58,11 +57,17 @@ public abstract class RepositoryFiller {
 
         if (!fileRepository.getFilesByYear().containsKey(String.valueOf(creationDateTime.getYear()))) {
             fileRepository.getFilesByYear().put(String.valueOf(creationDateTime.getYear()),
-                    Collections.synchronizedList(new ArrayList<>()));
+                    ConcurrentHashMap.newKeySet());
         }
 
         fileRepository.getFilesByYear().get(String.valueOf(creationDateTime.getYear()))
-                .add(new MyFile(file, creationDateTime));
+                .add(MyFile.builder()
+                        .path(file)
+                        .creationDateTime(creationDateTime)
+                        .size(file.length())
+                        .build()
+                );
+
         System.out.printf("Файл %s добавлен в перечень для сортировки\n", file.getAbsolutePath());
     }
 
@@ -75,7 +80,7 @@ public abstract class RepositoryFiller {
                     .toLocalDateTime();
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            return null;
         }
-        return null;
     }
 }
