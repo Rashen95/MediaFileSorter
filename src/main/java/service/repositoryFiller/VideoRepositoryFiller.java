@@ -33,14 +33,22 @@ public final class VideoRepositoryFiller extends RepositoryFiller {
             if (mp4Directory != null) {
                 Date date = mp4Directory.getDate(Mp4Directory.TAG_CREATION_TIME);
                 if (date != null) {
-                    return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("+03:00"));
+                    LocalDateTime creationDate = LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("+03:00"));
+                    if (creationDate.isBefore(LocalDateTime.parse("2000-01-01T00:00:00"))) {
+                        return null;
+                    }
+                    return creationDate;
                 }
             }
             QuickTimeDirectory quickTimeDirectory = metadata.getFirstDirectoryOfType(QuickTimeDirectory.class);
             if (quickTimeDirectory != null) {
                 Date date = quickTimeDirectory.getDate(QuickTimeDirectory.TAG_CREATION_TIME);
                 if (date != null) {
-                    return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("+03:00"));
+                    LocalDateTime creationDate = LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("+03:00"));
+                    if (creationDate.isBefore(LocalDateTime.parse("2000-01-01T00:00:00"))) {
+                        return null;
+                    }
+                    return creationDate;
                 }
             }
             return null;
